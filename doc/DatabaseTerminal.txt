@@ -69,7 +69,8 @@ Command~
 
     Open new DbTerminal a terminal to access database server.
     You can type split after this command to open terminal in split.
-    If you don't type split,the terminal will open in vsplit.
+    When {split} set to 'split',open DbTerminal in split.
+    You can also set to 'vsplit'.Open DbTerminal in split by default.
     You must set these variables to use this command.
 
     | name                         | set value                           |
