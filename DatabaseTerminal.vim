@@ -14,5 +14,11 @@ set cpo&vim
 nnoremap <silent> <Plug>(DatabaseTerminal_runCom) :<C-u>call DatabaseTerminal#runcom(line('.'),line('.'))<CR>
 vnoremap <silent> <Plug>(DatabaseTerminal_runCom) :<C-u>call DatabaseTerminal#runcom(line("'<"),line("'>"))<CR>
 
+command! -nargs=* DbTerminal call DatabaseTerminal#startDB(<f-args>)
+
+command! -nargs=0 DbTStart call DatabaseTerminal#startServ()
+
+command! -nargs=0 DbTOutPut call DatabaseTerminal#conv()
+
 let &cpo = s:savecpo
 unlet s:savecpo

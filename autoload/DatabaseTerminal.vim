@@ -35,7 +35,7 @@ func! s:endDB(...) abort
     let msg = string(term_getline(s:sqlb,2))
     if msg =~? 'error'
         if a:0
-            call s:startDB('server'.a:1)
+            call DatabaseTerminal#startDB('server'.a:1)
         endif
         return
     endif
@@ -50,13 +50,13 @@ func! s:endDB(...) abort
     return
 endfunc
 
-func! s:startDB(...) abort
+func! DatabaseTerminal#startDB(...) abort
     echo 'start DbTerminal...'
     let dict = copy(s:dict)
     if a:0
         let args = join(a:000)
         if args =~ 'server'
-            call s:startServ()
+            call DatabaseTerminal#startServ()
         endif
         let args = ''
         if args =~? 'vs'
@@ -97,7 +97,7 @@ endfunc
 
 func! DatabaseTerminal#runcom(line1,line2) abort
     if !exists('s:sqlb')
-        call s:startDB()
+        call DatabaseTerminal#startDB()
     elseif term_getstatus(s:sqlb) ==# 'normal'
         call term_sendkeys(s:sqlb,'i')
     endif
@@ -135,19 +135,13 @@ else
     endfunc
 endif
 
-func! s:startServ() abort
+func! DatabaseTerminal#startServ() abort
     try
         call system(s:startcom)
     catch
     endtry
     return
 endfunc
-
-command! -nargs=* DbTerminal call s:startDB(<f-args>)
-
-command! -nargs=0 DbTStart call s:startServ()
-
-command! -nargs=0 DbTOutPut call s:conv()
 
 if exists('g:DatabaseTerminal_dbRunCom') && exists('g:DatabaseTerminal_dbName')
     let s:lines = []
