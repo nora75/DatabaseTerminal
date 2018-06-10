@@ -33,7 +33,7 @@ func! s:endDB(...) abort
         return
     endif
     let msg = string(term_getline(s:sqlb,2))
-    if msg =~? 'error'
+    if msg =~? 'error' && msg =~? 'connect'
         if a:0
             call DatabaseTerminal#startDB('server'.a:1)
         endif
@@ -80,6 +80,8 @@ func! s:searchall() abort
     let result = []
     let back_igc = &ignorecase
     let back_smc = &smartcase
+    set ignorecase
+    set nosmartcase
     try
         call setpos(".", [0, line("$"), strlen(getline("$")), 0])
         while 1
