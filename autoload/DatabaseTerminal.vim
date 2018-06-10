@@ -10,6 +10,8 @@ endif
 let g:loaded_DatabaseTerminalAutoload = 1
 let s:savecpo = &cpo
 set cpo&vim
+let s:lines = []
+let s:called = 0
 
 if !has('terminal')
     echohl WarningMsg
@@ -40,11 +42,7 @@ func! s:endDB(...) abort
         return
     endif
     echo 'end DbTerminal...'
-    let pos = s:searchall()
-    if len(pos) > 1
-        let lines = pos[0][0].',"$"'
-        exe 'call extend(s:lines,getline('.lines.'))'
-    endif
+    call extend(s:lines,getline(1,"$"))
     let s:called = 0
     if bufnr("%") == s:sqlb
         q!
@@ -116,13 +114,13 @@ if executable('pandoc') && exists('g:DatabaseTerminal_folder')
         endif
         echo 'execution result is outputed to '.s:output
         if filereadable(s:output)
-            call system('pandoc -f docx '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
+            call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
             call delete(s:output)
             call insert(s:lines,'')
         endif
         call map(s:lines,'v:val."  "')
         call writefile(s:lines,s:txt,'a')
-        call system('pandoc -t docx -o '.s:output.' '.s:txt)
+        call system('pandoc -t '.g:DatabaseTerminal_outputFormat.' -o '.s:output.' '.s:txt)
         call delete(s:txt)
         let s:lines = []
         return
@@ -145,8 +143,6 @@ func! DatabaseTerminal#startServ() abort
 endfunc
 
 if exists('g:DatabaseTerminal_dbRunCom')
-    let s:lines = []
-    let s:called = 0
     let s:dbrun = g:DatabaseTerminal_dbRunCom
     if exists('g:DatabaseTerminal_dbRunArgs')
         let s:dbrun .= ' '.g:DatabaseTerminal_dbRunArgs
