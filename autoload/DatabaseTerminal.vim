@@ -46,6 +46,9 @@ func! s:endDB(...) abort
         exe 'call extend(s:lines,getline('.lines.'))'
     endif
     let s:called = 0
+    if bufnr("%") == s:sqlb
+        q!
+    endif
     unlet s:sqlb
     return
 endfunc
@@ -148,7 +151,7 @@ if exists('g:DatabaseTerminal_dbRunCom') && exists('g:DatabaseTerminal_dbName')
     endif
     let s:dict = 
     \ { "term_name" : g:DatabaseTerminal_dbName, "norestore" : "1" ,
-    \ "term_finish" : "close" ,
+    \ "term_finish" : "open" ,
     \ "exit_cb" : function('s:endDB') , "stoponexit": "exit" }
 else
     echohl WarningMsg
