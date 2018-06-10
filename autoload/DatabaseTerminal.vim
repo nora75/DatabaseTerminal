@@ -84,8 +84,10 @@ func! s:searchall() abort
     try
         call setpos(".", [0, line("$"), strlen(getline("$")), 0])
         while 1
-            silent! let pos = searchpos('\M^\c'.tolower(g:DatabaseTerminal_dbName.'>'), "w")
-            if pos == [0, 0] || index(result, pos) != -1 || len(result) > 1
+            silent! let pos = searchpos('\M>', "w")
+            if pos == [0, 0]
+                return [[1],2]
+            elseif index(result, pos) != -1 || len(result) > 1
                 break
             endif
             call add(result, pos)
@@ -142,7 +144,7 @@ func! DatabaseTerminal#startServ() abort
     return
 endfunc
 
-if exists('g:DatabaseTerminal_dbRunCom') && exists('g:DatabaseTerminal_dbName')
+if exists('g:DatabaseTerminal_dbRunCom')
     let s:lines = []
     let s:called = 0
     let s:dbrun = g:DatabaseTerminal_dbRunCom
@@ -150,7 +152,7 @@ if exists('g:DatabaseTerminal_dbRunCom') && exists('g:DatabaseTerminal_dbName')
         let s:dbrun .= ' '.g:DatabaseTerminal_dbRunArgs
     endif
     let s:dict = 
-    \ { "term_name" : g:DatabaseTerminal_dbName, "norestore" : "1" ,
+    \ { "term_name" : "DbTerminal", "norestore" : "1" ,
     \ "term_finish" : "open" ,
     \ "exit_cb" : function('s:endDB') , "stoponexit": "exit" }
 else
@@ -201,6 +203,9 @@ if exists('g:DatabaseTerminal_dbName')
             let s:stopcom = 'call system(''service '.g:DatabaseTerminal_dbName.' stop'')'
         endif
     endif
+else
+    let s:startcom = ''
+    let s:stopcom = ''
 endif
 
 if exists('g:DatabaseTerminal_dontStop')
