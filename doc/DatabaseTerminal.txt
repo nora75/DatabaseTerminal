@@ -5,10 +5,9 @@
 --------------------------------------------------------------------------------
 Description~
 
-    This plugin provides commands and mappings for markdown table.
-    Such as make empty table,convert currentline to table.
-    You can use comannd and mapping only in markdown files by default.
-    This plugin has only few functions now.I want to make more.
+    This plugin provides commands and mappings for Use MySQL Database in
+    terminal.
+    This plugin only support MySQL,but others may move...?
 
     THIS PLUGIN IS NOT COMPLETED YET.
     Plugin's mapping or command may be changed in near future.

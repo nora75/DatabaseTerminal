@@ -41,8 +41,8 @@ func! s:endDB(...) abort
     endif
     echo 'end DbTerminal...'
     let pos = s:searchall()
-    if len(pos) > 4
-        let lines = pos[2][0].',"$"'
+    if len(pos) > 1
+        let lines = pos[0][0].',"$"'
         exe 'call extend(s:lines,getline('.lines.'))'
     endif
     let s:called = 0
@@ -78,22 +78,16 @@ endfunc
 
 func! s:searchall() abort
     let result = []
-    let back_igc = &ignorecase
-    let back_smc = &smartcase
-    set ignorecase
-    set nosmartcase
     try
         call setpos(".", [0, line("$"), strlen(getline("$")), 0])
         while 1
-            silent! let pos = searchpos(tolower(g:DatabaseTerminal_dbName), "w")
-            if pos == [0, 0] || index(result, pos) != -1 || len(result) > 4
+            silent! let pos = searchpos('\M^\c'.tolower(g:DatabaseTerminal_dbName.'>'), "w")
+            if pos == [0, 0] || index(result, pos) != -1 || len(result) > 1
                 break
             endif
             call add(result, pos)
         endwhile
     endtry
-    let &ignorecase = back_igc
-    let &smartcase = back_smc
     return result
 endfunc
 
@@ -169,7 +163,7 @@ endif
 if exists('g:DatabaseTerminal_autoOutput')
     aug DatabaseTerminal
         au!
-        au VimLeavePre * call <SID>conv()
+        au VimLeavePre * call DatabaseTerminal#conv()
     aug END
 endif
 
