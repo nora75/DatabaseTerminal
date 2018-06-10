@@ -108,7 +108,7 @@ func! DatabaseTerminal#runcom(line1,line2) abort
 endfunc
 
 if executable('pandoc') && exists('g:DatabaseTerminal_folder')
-    func! s:conv() abort
+    func! DatabaseTerminal#conv() abort
         if !len(s:lines)
             echo 'no output lines'
             return
@@ -127,7 +127,7 @@ if executable('pandoc') && exists('g:DatabaseTerminal_folder')
         return
     endfunc
 else
-    func! s:conv() abort
+    func! DatabaseTerminal#conv() abort
         echohl WarningMsg
         echo 'You Don''t meet the requirements to output file'
         echohl None
