@@ -9,7 +9,7 @@ This plugin provides command to open terminal and start acess to database.
 This plugin support autorun database server.  
 It may be usefull for practice.  
 You can use \<Space>r mapping to send and run sql command in the terminal from your file.  
-You can export execusion result to file by [Pandoc](https://pandoc.org/) or your own setting by variable.  
+You can export execusion result to file by [Pandoc](https://pandoc.org/).  
 
 Note:  
 This plugin is made for me. So if you install this plugin, it may occur some problems.  
@@ -37,7 +37,7 @@ You can use these commands.
 
 ## Mapping
 
-+ <Space>r
++ \<Space>r
 
     This mapping provides you to run sql command of line under the cursor or selected area.  
     This mapping can use in sql file.
