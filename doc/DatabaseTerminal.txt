@@ -1,0 +1,256 @@
+*DatabaseTerminal.txt* Plugin for markdown table
+" Last Change: 2018 Jun 10
+" Maintainer: NORA75
+" Licence: MIT
+--------------------------------------------------------------------------------
+Description~
+
+    This plugin provides commands and mappings for markdown table.
+    Such as make empty table,convert currentline to table.
+    You can use comannd and mapping only in markdown files by default.
+    This plugin has only few functions now.I want to make more.
+
+    THIS PLUGIN IS NOT COMPLETED YET.
+    Plugin's mapping or command may be changed in near future.
+
+    Note:
+    This plugin made for windows.It may be work in Linux,maybe.
+    I can't care about any case.
+
+--------------------------------------------------------------------------------
+CONTENTS~
+
+1. Intro                                              |DatabaseTerminal-Intro|
+2. Command                                          |DatabaseTerminal-command|
+3. Mapping                                          |DatabaseTerminal-mapping|
+4. Variables                                      |DatabaseTerminal-variables|
+
+--------------------------------------------------------------------------------
+                                                      *DatabaseTerminal-Intro*
+Intro~
+
+First: Set some variables.
+
+    1. Set your database name to |g:DatabaseTerminal_dbName|.
+
+    2. Set access to your database command to |g:DatabaseTerminal_dbRunCom|.
+
+    3. Set optional args to |g:DatabaseTerminal_dbRunArgs| if you want.
+
+Second: You can use this plugin.
+
+    1. :DbTerminal command can open terminal and access to database.
+
+    2. :DbStart command can start your database server manually.
+
+Third: Theare are some customizable options.
+
+    1. If you want to open in vsplit always set |g:DatabaseTerminal_alwaysVsplit|.
+
+    2. If you want to output  execution result, see below variables description.
+
+        + |g:DatabaseTerminal_folder|       
+        + |g:DatabaseTerminal_fileName|     
+        + |g:DatabaseTerminal_outputFormat| 
+        + |g:DatabaseTerminal_outputExtens| 
+        + |g:DatabaseTerminal_autodate|     
+        + |g:DatabaseTerminal_autoOutput|
+
+    Note:
+    Be helpful -> |:let| |variables| |eval|
+
+--------------------------------------------------------------------------------
+                                                    *DatabaseTerminal-command*
+Command~
+
+                                                                 *:DbTerminal*
+
+:DbTerminal [{split}]
+
+    Open new DbTerminal a terminal to access database server.
+    You can type split after this command to open terminal in split.
+    If you don't type split,the terminal will open in vsplit.
+    You must set these variables to use this command.
+
+    | name                         | set value                           |
+    +------------------------------+-------------------------------------+
+    | |g:DatabaseTerminal_dbName|    | start Database Server(Service) name |
+    | |g:DatabaseTerminal_dbRunCom|  | access to Database Sever command    |
+    | |g:DatabaseTerminal_dbRunArgs| | Optional args you want              |
+
+    Note:
+    This command support to start and end Database Sever automatically.
+
+                                                                  *:DbTOutput*
+
+:DbTOutput
+
+    Output file to specified folder by |g:DatabaseTerminal_folder| and 
+    |g:DatabaseTerminal_filename|.
+    The output style can set by |g:DatabaseTerminal_outputExtens| and 
+    |g:DatabaseTerminal_outputType|
+    This command needs [Pandoc](https://pandoc.org/).
+
+    Note:
+    You can set |g:DatabaseTerminal_exeCom| to customized command.
+    This variable is execute by |system()| (don't need pandoc).
+
+                                                                   *:DbTStart*
+
+:DbTStart
+
+    Start Database Server.
+    This command will not be used because |:DbTerminal| command support to start 
+    and end Database Server automatically.
+
+--------------------------------------------------------------------------------
+                                                    *DatabaseTerminal-mapping*
+Mapping~
+
+<Space>r
+
+    Send command of the current or seleted by visual to opend DbTerminal.
+    This mapping can use in only sql file and the buffer runned |:DbTerm| command.
+    This command open new DbTerminal if it isn't open yet.
+
+    Note:
+    You can map any key using |map| command.
+    Ex:
+>
+        nmap <Space>r <Plug>(DatabaseTerminal_runCom)
+        vmap <Space>r <Plug>(DatabaseTerminal_runCom)
+<
+--------------------------------------------------------------------------------
+                                                  *DatabaseTerminal-variables*
+Variables~
+                                                   
+                                                   *g:DatabaseTerminal_dbName*
+
+g:DatabaseTerminal_dbName
+
+    Set your database name.
+    This variable is used by start and end the database server.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_dbName = 'MySQL'
+<
+                                                 *g:DatabaseTerminal_dbRunCom*
+
+g:DatabaseTerminal_dbRunCom
+                                              
+    Set access to your database command.
+    This variable is used by start access to the database server in DbTerminal.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_dbRunCom = 'mysql'
+<
+                                                *g:DatabaseTerminal_dbRunArgs*
+
+g:DatabaseTerminal_dbRunArgs
+
+    Set optional args.
+    This variable is used by start access to The Database Server in DbTerminal.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_dbRunArgs = '-u root -p'
+<
+                                             *g:DatabaseTerminal_alwaysVsplit*
+
+g:DatabaseTerminal_alwaysVsplit
+                                              
+    Set true to open vsplit by default.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_alwaysVsplit = 1
+<
+                                                 |g:DatabaseTerminal_dontStop|
+g:DatabaseTerminal_dontStop
+
+    Set true to don't stop server when vim leave.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_dontStop = 1
+<
+                                                   *g:DatabaseTerminal_folder*
+
+g:DatabaseTerminal_folder
+
+    Set the folder of you want to output.
+    You don't have to set this variables if you don't want to output any file.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_folder = expand('~')
+        let g:DatabaseTerminal_folder = 'C:/samplefolder/'
+<
+                                                 *g:DatabaseTerminal_fileName*
+
+g:DatabaseTerminal_fileName
+
+    Set the file name of you want to output.
+    You don't have to set this variables if you don't want to output any file.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_fileName = 'log'
+<
+                                              *g:DatabaseTerminal_outputType*
+
+g:DatabaseTerminal_outputFormat
+
+    Set the file format of you want to output.
+    This variable must set the name supported format by pandoc.
+    You don't have to set this variables if you don't want to output any file.
+    Default: 'markdown'
+
+    Ex:
+>
+        let g:DatabaseTerminal_outputFormat = 'docx'
+<
+                                             *g:DatabaseTerminal_outputExtens*
+
+g:DatabaseTerminal_outputExtens
+
+    Set the file extension of you want to output.
+    You don't have to set this variables if you don't want to output any file.
+    Default: 'md'
+
+    Ex:
+>
+        let g:DatabaseTerminal_outputExtens = 'docx'
+<
+                                                 *g:DatabaseTerminal_autodate*
+g:DatabaseTerminal_autodate
+
+    Set the true to if you want to add date to the output file automatically.
+    You don't have to set this variables if you don't want to output any file.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_autodate = 1
+<
+                                               |g:DatabaseTerminal_autoOutput|
+g:DatabaseTerminal_autoOutput
+
+    Set true to output file when end vim automatically.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_autodate = 1
+<
+--------------------------------------------------------------------------------
+vim:tw=78:ts=8:ft=help:norl:nonu:
