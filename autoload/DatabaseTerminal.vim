@@ -176,10 +176,7 @@ if exists('g:DatabaseTerminal_folder') && exists('g:DatabaseTerminal_fileName')
     let s:folder .= g:DatabaseTerminal_fileName
     let s:folder = expand(s:folder)
     if exists('g:DatabaseTerminal_autodate')
-        let s:date = strftime('%c')
-        let s:date = strcharpart(s:date,match(s:date,'/')+1)
-        let s:date = strcharpart(s:date,0,match(s:date,' '))
-        let s:date = substitute(s:date,'/','','g')
+        let s:date = strftime('%m%d')
         let s:folder .= s:date
     endif
     let s:txt = s:folder.'.txt'
