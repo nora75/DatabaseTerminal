@@ -6,7 +6,6 @@ This plugin supports only up Vim 8.1
 # Description
 
 This plugin provides command to open terminal and start acess to database.  
-This plugin support autorun database server.  
 It may be usefull for practice.  
 You can use \<Space>r mapping to send and run sql command in the terminal from your file.  
 You can export execusion result to file by [Pandoc](https://pandoc.org/).  
@@ -34,6 +33,7 @@ You can use these commands.
 + :DbTStart
 
     Start Database server by manual.  
+    This command needs administrator in windows.Not linux supprts.
 
 ## Mapping
 

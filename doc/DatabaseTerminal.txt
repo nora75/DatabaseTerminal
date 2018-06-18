@@ -79,7 +79,10 @@ Command~
     | |g:DatabaseTerminal_dbRunArgs| | Optional args you want              |
 
     Note:
-    This command support to start and end Database Sever automatically.
+    DbTerminal is closed when disconnect to database server.
+    You can open only one DbTeminal at same time.
+    This command support to start and end Database Sever automatically if
+    your acount is administrator in windows.
 
                                                                   *:DbTOutput*
 
@@ -91,17 +94,11 @@ Command~
     |g:DatabaseTerminal_outputType|
     This command needs [Pandoc](https://pandoc.org/).
 
-    Note:
-    You can set |g:DatabaseTerminal_exeCom| to customized command.
-    This variable is execute by |system()| (don't need pandoc).
-
                                                                    *:DbTStart*
 
 :DbTStart
 
-    Start Database Server.
-    This command will not be used because |:DbTerminal| command support to start 
-    and end Database Server automatically.
+    Start Database Sever if your acount is administrator in windows.
 
 --------------------------------------------------------------------------------
                                                     *DatabaseTerminal-mapping*
@@ -187,7 +184,7 @@ g:DatabaseTerminal_folder
 
     Set the folder of you want to output.
     You don't have to set this variables if you don't want to output any file.
-    Default: not set
+    Default: home directory
 
     Ex:
 >
@@ -200,13 +197,13 @@ g:DatabaseTerminal_fileName
 
     Set the file name of you want to output.
     You don't have to set this variables if you don't want to output any file.
-    Default: not set
+    Default: DBlog
 
     Ex:
 >
         let g:DatabaseTerminal_fileName = 'log'
 <
-                                              *g:DatabaseTerminal_outputType*
+                                              *g:DatabaseTerminal_outputFormat*
 
 g:DatabaseTerminal_outputFormat
 
@@ -242,15 +239,15 @@ g:DatabaseTerminal_autodate
 >
         let g:DatabaseTerminal_autodate = 1
 <
-                                               |g:DatabaseTerminal_autoOutput|
+                                               *g:DatabaseTerminal_autoOutput*
 g:DatabaseTerminal_autoOutput
 
-    Set true to output file when end vim automatically.
+    Set true to output file automatically when end vim.
     Default: not set
 
     Ex:
 >
-        let g:DatabaseTerminal_autodate = 1
+        let g:DatabaseTerminal_autoOutput = 1
 <
 --------------------------------------------------------------------------------
 vim:tw=78:ts=8:ft=help:norl:nonu:
