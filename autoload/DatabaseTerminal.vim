@@ -22,7 +22,7 @@ func! s:rec(...) abort
     if exists('s:timer')
         call timer_stop(s:timer)
     endif
-    let s:n = timer_start(1000,function('<SID>getlines'))
+    let s:n = timer_start(10,function('<SID>getlines'))
     return
 endfunc
 
@@ -31,7 +31,6 @@ func! s:endDB(...) abort
         return
     endif
     if s:called > 1
-        call s:wipeout()
         call s:ech('Please run Database Server first')
         return
     endif
@@ -40,9 +39,8 @@ func! s:endDB(...) abort
         return
     endif
     echo 'end DbTerminal...'
-    call s:wipeout()
     let s:called = 0
-    call s:checklines()
+    call s:getlines()
     unlet s:sqlb
     return
 endfunc
@@ -51,34 +49,11 @@ func! s:getlines(...) abort
     if !exists('s:sqlb')
         return
     endif
-    let s:lines = getbufline(s:sqlb,1,"$")
-    return
-endfunc
-
-func! s:checklines() abort
-    if !len(s:lines)
-        echo 'no output lines'
-        return
-    endif
-    if exists('s:sqlb')
-        let newline = getbufline(s:sqlb,1,"$")
-        if len(newline) > len(s:lines)
-            if newline != s:lines
-                let s:lines = newline
-            endif
+    let newline = getbufline('DbTerminal',1,"$")
+    if len(newline) >= len(s:lines)
+        if s:lines != newline
+            let s:lines = newline
         endif
-    endif
-    return
-endfunc
-
-func! s:wipeout() abort
-    if !exists('s:sqlb')
-        return
-    endif
-    let buflist = split(execute('ls'))
-    call filter(buflist,'v:val =~ "^\s*'.s:sqlb.'"')
-    if len(buflist)
-        exe 'silent! hide '.s:sqlb
     endif
     return
 endfunc
@@ -118,27 +93,26 @@ func! DatabaseTerminal#startDB(...) abort
         endif
         let args = ''
         if args =~? 'vs'
-            if has_key(dict,'vertical')
-                call extend(dict,{'vertical':1})
-            endif
+            let s:opencom = 'vnew'
             let args = 'vs'
         elseif args =~? 'sp'
             silent! call remove(dict,'vertical')
+            let s:opencom = 'new'
             let args = 'sp'
         endif
         let dict['exit_cb'] = function('s:endDB',[args])
     endif
     nmap <silent><buffer> <Space>r <Plug>(DatabaseTerminal_runCom)
     vmap <silent><buffer> <Space>r <Plug>(DatabaseTerminal_runCom)
+    exe s:opencom
     let s:sqlb = term_start(s:dbrun, dict)
     return
 endfunc
 
 func! DatabaseTerminal#runcom(line1,line2) abort
     if !exists('s:sqlb')
-        let b_bufnum = win_getid(bufnr(''))
         call DatabaseTerminal#startDB()
-        call win_gotoid(b_bufnum)
+        return
     elseif term_getstatus(s:sqlb) ==# 'normal'
         call term_sendkeys(s:sqlb,'i')
     endif
@@ -153,7 +127,11 @@ func! DatabaseTerminal#conv() abort
         call s:ech('You Don''t meet the requirements to output file')
         return
     endif
-    call s:checklines()
+    if !len(s:lines)
+        echo 'no output lines'
+        return
+    endif
+    call s:getlines()
     try
         echo 'execution result is outputed to '.s:output
     catch
@@ -184,20 +162,18 @@ if exists('g:DatabaseTerminal_dbRunCom')
     endif
     let s:dict = 
     \ { "term_name" : "DbTerminal" ,
-    \ "term_finish" : "open" ,
+    \ "curwin" : 1 ,
     \ "callback" : function('s:getlines') ,
-    \ "exit_cb" : function('s:endDB')}
-else
-    call s:ech('Please set variables first,See helpfile :help DatabaseTerminal-Intro')
+    \ "exit_cb" : function('s:endDB') ,
+    \ "term_finish" : "close" }
 endif
 
-if exists('g:DatabaseTerminal_alwaysOpenVsplit')
-    call extend(s:dict,{"vertical":1})
-endif
-
+aug DatabaseTerminal
+    au!
+    au VimLeavePre * if buflisted('s:sqlb')|exe 'silent! bw! '.s:sqlb|endif
+aug END
 if exists('g:DatabaseTerminal_autoOutput')
     aug DatabaseTerminal
-        au!
         au VimLeavePre * call DatabaseTerminal#conv()
     aug END
 endif
@@ -232,6 +208,16 @@ endif
 
 if exists('g:DatabaseTerminal_dontStop')
     let s:stopcom = ''
+endif
+
+if exists('g:DatabaseTerminal_openCom')
+    let s:opencom = g:DatabaseTerminal_openCom
+else
+    if exists('g:DatabaseTerminal_alwaysOpenVsplit')
+        let s:opencom = 'vnew'
+    else
+        let s:opencom = 'new'
+    endif
 endif
 
 let &cpo = s:savecpo

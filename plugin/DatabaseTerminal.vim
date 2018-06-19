@@ -20,5 +20,16 @@ command! -nargs=0 DbTStart call DatabaseTerminal#startServ()
 
 command! -nargs=0 DbTOutPut call DatabaseTerminal#conv()
 
+aug DatabaseTerminal
+    au!
+    autocmd BufNew * call timer_start(0, function('s:ft'))
+aug END
+
+function! s:ft(...)
+    if &buftype == 'terminal' && &filetype == '' && bufname('%') == 'DbTerminal'
+        set filetype=DbTerminal
+    endif
+endfunction
+
 let &cpo = s:savecpo
 unlet s:savecpo

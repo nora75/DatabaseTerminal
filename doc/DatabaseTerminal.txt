@@ -2,7 +2,7 @@
 " Last Change: 2018 Jun 10
 " Maintainer: NORA75
 " Licence: MIT
---------------------------------------------------------------------------------
+================================================================================
 Description~
 
     This plugin provides commands and mappings for Use MySQL Database in
@@ -16,15 +16,17 @@ Description~
     This plugin made for windows.It may be work in Linux,maybe.
     I can't care about any case.
 
---------------------------------------------------------------------------------
+================================================================================
 CONTENTS~
 
 1. Intro                                              |DatabaseTerminal-Intro|
 2. Command                                          |DatabaseTerminal-command|
 3. Mapping                                          |DatabaseTerminal-mapping|
-4. Variables                                      |DatabaseTerminal-variables|
+4. Customization                              |DatabaseTerminal-customization|
+5. Variables                                      |DatabaseTerminal-variables|
+6. Autocmd                                          |DatabaseTerminal-autocmd|
 
---------------------------------------------------------------------------------
+================================================================================
                                                       *DatabaseTerminal-Intro*
 Intro~
 
@@ -58,7 +60,7 @@ Third: Theare are some customizable options.
     Note:
     Be helpful -> |:let| |variables| |eval|
 
---------------------------------------------------------------------------------
+================================================================================
                                                     *DatabaseTerminal-command*
 Command~
 
@@ -100,7 +102,7 @@ Command~
 
     Start Database Sever if your acount is administrator in windows.
 
---------------------------------------------------------------------------------
+================================================================================
                                                     *DatabaseTerminal-mapping*
 Mapping~
 
@@ -117,10 +119,14 @@ Mapping~
         nmap <Space>r <Plug>(DatabaseTerminal_runCom)
         vmap <Space>r <Plug>(DatabaseTerminal_runCom)
 <
+================================================================================
+                                              *DatabaseTerminal-customization*
+Customization~
+
 --------------------------------------------------------------------------------
                                                   *DatabaseTerminal-variables*
 Variables~
-                                                   
+
                                                    *g:DatabaseTerminal_dbName*
 
 g:DatabaseTerminal_dbName
@@ -136,7 +142,7 @@ g:DatabaseTerminal_dbName
                                                  *g:DatabaseTerminal_dbRunCom*
 
 g:DatabaseTerminal_dbRunCom
-                                              
+
     Set access to your database command.
     This variable is used by start access to the database server in DbTerminal.
     Default: not set
@@ -160,8 +166,9 @@ g:DatabaseTerminal_dbRunArgs
                                              *g:DatabaseTerminal_alwaysVsplit*
 
 g:DatabaseTerminal_alwaysVsplit
-                                              
+
     Set true to open vsplit by default.
+    Don't work when |g:DatabaseTerminal_openCmd| is set.
     Default: not set
 
     Ex:
@@ -185,6 +192,8 @@ g:DatabaseTerminal_folder
     Set the folder of you want to output.
     You don't have to set this variables if you don't want to output any file.
     Default: home directory
+    Note:
+    Require to install pandoc if you want to output any file.
 
     Ex:
 >
@@ -198,6 +207,8 @@ g:DatabaseTerminal_fileName
     Set the file name of you want to output.
     You don't have to set this variables if you don't want to output any file.
     Default: DBlog
+    Note:
+    Require to install pandoc if you want to output any file.
 
     Ex:
 >
@@ -211,6 +222,8 @@ g:DatabaseTerminal_outputFormat
     This variable must set the name supported format by pandoc.
     You don't have to set this variables if you don't want to output any file.
     Default: 'markdown'
+    Note:
+    Require to install pandoc if you want to output any file.
 
     Ex:
 >
@@ -223,31 +236,64 @@ g:DatabaseTerminal_outputExtens
     Set the file extension of you want to output.
     You don't have to set this variables if you don't want to output any file.
     Default: 'md'
+    Note:
+    Require to install pandoc if you want to output any file.
 
     Ex:
 >
         let g:DatabaseTerminal_outputExtens = 'docx'
 <
                                                  *g:DatabaseTerminal_autodate*
+
 g:DatabaseTerminal_autodate
 
     Set the true to if you want to add date to the output file automatically.
     You don't have to set this variables if you don't want to output any file.
     Default: not set
+    Note:
+    Require to install pandoc if you want to output any file.
 
     Ex:
 >
         let g:DatabaseTerminal_autodate = 1
 <
                                                *g:DatabaseTerminal_autoOutput*
+
 g:DatabaseTerminal_autoOutput
 
     Set true to output file automatically when end vim.
     Default: not set
+    Note:
+    Require to install pandoc if you want to output any file.
 
     Ex:
 >
         let g:DatabaseTerminal_autoOutput = 1
 <
+
+                                               *g:DatabaseTerminal_openCmd*
+
+g:DatabaseTerminal_openCmd
+
+    Set open new DbTerminal window command.
+    Any open buffer or window command is ok because override buffer to DbTerminal.
+    Default: not set
+
+    Ex:
+>
+        let g:DatabaseTerminal_openCmd = 'bo 7new'
+<
+--------------------------------------------------------------------------------
+                                                    *DatabaseTerminal-autocmd*
+Autocmd
+
+    When launched the DbTerminal |'filetype'| option set to DbTerminal.
+    You can use DbTerminal filetype on |FileType| event.
+ 
+    Ex:
+ >
+        autocmd FileType DbTerminal nmap <Space>r <Plug>(DatabaseTerminal_runCom)
+<
+
 --------------------------------------------------------------------------------
 vim:tw=78:ts=8:ft=help:norl:nonu:
