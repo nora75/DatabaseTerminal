@@ -24,7 +24,7 @@ You can use these commands.
 
 + :DbTerminal
 
-    Open the terminal and start access database.  
+    Open new DbTerminal a terminal to access database server or Go to current opend DbTerminal.  
 
 + :DbTOutput
 
@@ -33,7 +33,11 @@ You can use these commands.
 + :DbTStart
 
     Start Database server by manual.  
-    This command needs administrator in windows.Not linux supprts.
+    This command needs administrator in windows.Not linux supports.  
+
++ :DbTOutClear
+
+    Clear the current output lines.  
 
 ## Mapping
 

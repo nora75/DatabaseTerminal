@@ -1,16 +1,11 @@
-*DatabaseTerminal.txt* Plugin for markdown table
-" Last Change: 2018 Jun 10
+*DatabaseTerminal.txt* Plugin for connect Database server from terminal
+" Last Change: 2018 Jun 25
 " Maintainer: NORA75
 " Licence: MIT
 ================================================================================
 Description~
 
-    This plugin provides commands and mappings for Use MySQL Database in
-    terminal.
-    This plugin only support MySQL,but others may move...?
-
-    THIS PLUGIN IS NOT COMPLETED YET.
-    Plugin's mapping or command may be changed in near future.
+    This plugin provides command may be changed in near future.
 
     Note:
     This plugin made for windows.It may be work in Linux,maybe.
@@ -68,7 +63,8 @@ Command~
 
 :DbTerminal [{split}]
 
-    Open new DbTerminal a terminal to access database server.
+    Open new DbTerminal a terminal to access database server or Go to 
+    current open DbTerminal.
     You can type split after this command to open terminal in split.
     When {split} set to 'split',open DbTerminal in split.
     You can also set to 'vsplit'.Open DbTerminal in split by default.
@@ -94,6 +90,8 @@ Command~
     |g:DatabaseTerminal_filename|.
     The output style can set by |g:DatabaseTerminal_outputExtens| and 
     |g:DatabaseTerminal_outputType|
+    Append output lines if the file already exists.
+    If you want to clear the current output lines,You can use |:DbTOutClear|.
     This command needs [Pandoc](https://pandoc.org/).
 
                                                                    *:DbTStart*
@@ -101,6 +99,13 @@ Command~
 :DbTStart
 
     Start Database Sever if your acount is administrator in windows.
+
+                                                                   *:DbTStart*
+
+:DbTOutClear
+
+    Clear the current output lines.
+    Note:This command can only clear output lines.Can't delete outputted file.
 
 ================================================================================
                                                     *DatabaseTerminal-mapping*
@@ -295,5 +300,5 @@ Autocmd
         autocmd FileType DbTerminal nmap <Space>r <Plug>(DatabaseTerminal_runCom)
 <
 
---------------------------------------------------------------------------------
+================================================================================
 vim:tw=78:ts=8:ft=help:norl:nonu:

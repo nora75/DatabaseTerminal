@@ -1,5 +1,5 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 2018 Jun 8
+" Last Change: 2018 Jun 25
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
@@ -19,6 +19,8 @@ command! -nargs=* DbTerminal call DatabaseTerminal#startDB(<f-args>)
 command! -nargs=0 DbTStart call DatabaseTerminal#startServ()
 
 command! -nargs=0 DbTOutPut call DatabaseTerminal#conv()
+
+command! -nargs=0 DbTOutClear call DatabaseTerminal#clear()
 
 aug DatabaseTerminal
     au!

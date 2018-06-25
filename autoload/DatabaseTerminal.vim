@@ -1,5 +1,5 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 2018 Jun 10
+" Last Change: 2018 Jun 25
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
@@ -86,6 +86,10 @@ func! DatabaseTerminal#startDB(...) abort
     catch
         call s:ech('Please set variables first,See helpfile :help DatabaseTerminal-Intro')
     endtry
+    if exists('s:sqlb')
+        exe 'tabn '.win_id2tabwin(s:bufwin)[0]
+        call win_gotoid(s:bufwin)
+    endif
     if a:0
         let args = join(a:000)
         if args =~ 'server'
@@ -152,6 +156,11 @@ endfunc
 
 func! DatabaseTerminal#startServ() abort
     silent! call system(s:startcom)
+    return
+endfunc
+
+func! DatabaseTerminal#clear() abort
+    let s:lines = []
     return
 endfunc
 
