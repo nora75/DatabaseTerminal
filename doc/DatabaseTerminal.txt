@@ -1,11 +1,11 @@
 *DatabaseTerminal.txt* Plugin for connect Database server from terminal
-" Last Change: 2018 Jun 25
+" Last Change: 2018 Jun 30
 " Maintainer: NORA75
 " Licence: MIT
 ================================================================================
 Description~
 
-    This plugin provides command may be changed in near future.
+    This plugin may be changed in near future.
 
     Note:
     This plugin made for windows.It may be work in Linux,maybe.
@@ -65,9 +65,9 @@ Command~
 
     Open new DbTerminal a terminal to access database server or Go to 
     current open DbTerminal.
-    You can type split after this command to open terminal in split.
     When {split} set to 'split',open DbTerminal in split.
-    You can also set to 'vsplit'.Open DbTerminal in split by default.
+    You can also set to 'vsplit'.Open DbTerminal in vsplit by default.
+    You can specify cu to open DbTerminal in current buffer.
     You must set these variables to use this command.
 
     | name                         | set value                           |
@@ -94,18 +94,27 @@ Command~
     If you want to clear the current output lines,You can use |:DbTOutClear|.
     This command needs [Pandoc](https://pandoc.org/).
 
+                                                             *:DbTOutPutClear*
+
+:DbTOutPutClear
+
+    Clear the current output lines.
+    Note:This command can only clear output lines.Can't delete outputted file.
+
+                                                              *:DbTOutPutEdit*
+
+:DbTOutPutEdit [{split}]
+
+    Edit the current output lines in new buffer.
+    The lines is saved when you close the buffer.
+    When {split} set to 'split'.Open DbTerminal in split.
+    You can also set to 'vsplit'.Open DbTerminal in vsplit.
+
                                                                    *:DbTStart*
 
 :DbTStart
 
     Start Database Sever if your acount is administrator in windows.
-
-                                                                   *:DbTStart*
-
-:DbTOutClear
-
-    Clear the current output lines.
-    Note:This command can only clear output lines.Can't delete outputted file.
 
 ================================================================================
                                                     *DatabaseTerminal-mapping*
@@ -225,6 +234,7 @@ g:DatabaseTerminal_outputFormat
 
     Set the file format of you want to output.
     This variable must set the name supported format by pandoc.
+    You have to set |g:DatabaseTerminal_outputExtens| too.
     You don't have to set this variables if you don't want to output any file.
     Default: 'markdown'
     Note:
@@ -239,6 +249,7 @@ g:DatabaseTerminal_outputFormat
 g:DatabaseTerminal_outputExtens
 
     Set the file extension of you want to output.
+    You have to set |g:DatabaseTerminal_outputFormat| too.
     You don't have to set this variables if you don't want to output any file.
     Default: 'md'
     Note:
@@ -275,14 +286,16 @@ g:DatabaseTerminal_autoOutput
 >
         let g:DatabaseTerminal_autoOutput = 1
 <
-
                                                *g:DatabaseTerminal_openCmd*
 
 g:DatabaseTerminal_openCmd
 
     Set open new DbTerminal window command.
-    Any open buffer or window command is ok because override buffer to DbTerminal.
+    Any open buffer or window command is ok because override last opend buffer
+    to DbTerminal.
     Default: not set
+    Note:
+    You can't open multiple DbTerminal by this variable.
 
     Ex:
 >
@@ -292,12 +305,19 @@ g:DatabaseTerminal_openCmd
                                                     *DatabaseTerminal-autocmd*
 Autocmd
 
-    When launched the DbTerminal |'filetype'| option set to DbTerminal.
+    When launched the DbTerminal,|'filetype'| option set to DbTerminal.
     You can use DbTerminal filetype on |FileType| event.
  
     Ex:
  >
-        autocmd FileType DbTerminal nmap <Space>r <Plug>(DatabaseTerminal_runCom)
+        autocmd FileType DbTerminal call timer_start(0, function('s:ft'))
+<
+    When open the DbTOutPut buffer,|'filetype'| option set to DbTOut.
+    You can use DbTOut filetype on |FileType| event.
+ 
+    Ex:
+ >
+        autocmd FileType DbTOut call timer_start(0, function('s:ft'))
 <
 
 ================================================================================

@@ -1,5 +1,5 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 2018 Jun 25
+" Last Change: 2018 Jun 30
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
@@ -11,7 +11,8 @@ let g:loaded_DatabaseTerminalAutoload = 1
 let s:savecpo = &cpo
 set cpo&vim
 let s:lines = []
-let s:called = 0
+let s:outlines = []
+let s:errc = 0
 
 if !has('terminal')
     call s:ech('Please update Vim to vim8.1 compiled with terminal window')
@@ -22,7 +23,7 @@ func! s:rec(...) abort
     if exists('s:timer')
         call timer_stop(s:timer)
     endif
-    let s:n = timer_start(10,function('<SID>getlines'))
+    let s:n = timer_start(1500,function('s:gettermlines'))
     return
 endfunc
 
@@ -30,46 +31,63 @@ func! s:endDB(...) abort
     if !exists('s:sqlb')
         return
     endif
-    if s:called > 1
+    if s:errc > 1
         call s:ech('Please run Database Server first')
         return
     endif
-    let s:called += 1
-    if !s:err()
+    let s:errc += 1
+    if s:err() != 0
+        let s:lines = []
+        unlet s:sqlb
+        call DatabaseTerminal#startDB('current')
         return
     endif
-    echo 'end DbTerminal...'
-    let s:called = 0
-    call s:getlines()
-    unlet s:sqlb
+    echo 'Close DbTerminal'
+    call s:gettermlines()
+    call s:bufwip()
+    if !exists('s:outb')
+        call s:makehide()
+    else
+        call s:appendhide()
+    endif
+    let s:errc = 0
     return
 endfunc
 
-func! s:getlines(...) abort
+func! s:gettermlines(...) abort
     if !exists('s:sqlb')
         return
     endif
-    let newline = getbufline('DbTerminal',1,"$")
-    if len(newline) >= len(s:lines)
-        if s:lines != newline
-            let s:lines = newline
+    let l = []
+    for i in range(1,line('$'))
+        call add(l,term_getline(s:sqlb,i))
+    endfor
+    if len(l) >= len(s:lines)
+        if l != s:lines
+            let s:lines = l
         endif
     endif
+    return
+endfunc
+
+func! s:getoutlines(...) abort
+    if !exists('s:outb')
+        return
+    endif
+    let s:outlines = getbufline(s:outb,1,'$')
     return
 endfunc
 
 func! s:err() abort
     let msg = string(term_getline(s:sqlb,2))
-    if msg =~? 'error' && msg =~? 'connect'
-        unlet s:sqlb
-        if a:0
-            call DatabaseTerminal#startDB('server'.a:1)
-        else
-            call DatabaseTerminal#startDB('server')
+    if msg !~ 'welcome' || msg =~? 'error' || msg == ''
+        if msg =~? 'connect'
+            call DatabaseTerminal#startServ()
+            return 1
         endif
-        return
+        return 2
     endif
-    return -1
+    return 0
 endfunc
 
 func! s:ech(ms) abort
@@ -79,37 +97,78 @@ func! s:ech(ms) abort
     return
 endfunc
 
+func! s:bufhide(...) abort
+    exe 'aug DatabaseTerminal|au VimLeavePre * silent! bw! '.s:sqlb.'|aug END'
+    return
+endfunc
+
+func! s:bufwip()
+    exe 'silent! bw! '.s:sqlb
+    unlet s:sqlb
+    return
+endfunc
+
+func! s:setopen(...) abort
+    let args = join(a:000)
+    if args =~ 'current'
+        let s:opencom = ''
+    elseif args =~? 'vs'
+        let s:opencom = 'vnew'
+    elseif args =~? 'sp'
+        let s:opencom = 'new'
+    endif
+    return
+endfunc
+
+func! s:makehide() abort
+    new
+    silent f DbTOutPut
+    setl noswf
+    setl bh=hide
+    setl nobl
+    setl bt=nofile
+    set ft=DbTOut
+    call append(line('$'),s:lines)
+    1delete_
+    let s:lines = []
+    setl nomod
+    let s:outb = bufnr('')
+    hide
+    return
+endfunc
+
+func! s:appendhide() abort
+    exe 'sb '.s:outb
+    call append(line('$'),s:lines)
+    hide
+    return
+endfunc
+
 func! DatabaseTerminal#startDB(...) abort
-    echo 'start DbTerminal...'
     try
         let dict = copy(s:dict)
     catch
         call s:ech('Please set variables first,See helpfile :help DatabaseTerminal-Intro')
     endtry
+    if a:0
+        let open = s:setopen(a:000)
+    else
+        let open = s:opencom
+    endif
+    if open != ''
+        echo 'Open DbTerminal'
+    endif
     if exists('s:sqlb')
         exe 'tabn '.win_id2tabwin(s:bufwin)[0]
         call win_gotoid(s:bufwin)
-    endif
-    if a:0
-        let args = join(a:000)
-        if args =~ 'server'
-            call DatabaseTerminal#startServ()
-        endif
-        let args = ''
-        if args =~? 'vs'
-            let s:opencom = 'vnew'
-            let args = 'vs'
-        elseif args =~? 'sp'
-            silent! call remove(dict,'vertical')
-            let s:opencom = 'new'
-            let args = 'sp'
-        endif
-        let dict['exit_cb'] = function('s:endDB',[args])
+        return
     endif
     nmap <silent><buffer> <Space>r <Plug>(DatabaseTerminal_runCom)
     vmap <silent><buffer> <Space>r <Plug>(DatabaseTerminal_runCom)
-    exe s:opencom
-    let s:sqlb = term_start(s:dbrun, dict)
+    if open != ''
+        exe open
+    endif
+    silent! let s:sqlb = term_start(s:dbrun, dict)
     return
 endfunc
 
@@ -131,11 +190,11 @@ func! DatabaseTerminal#conv() abort
         call s:ech('You Don''t meet the requirements to output file')
         return
     endif
-    if !len(s:lines)
+    call s:getoutlines()
+    if !len(s:outlines)
         echo 'no output lines'
         return
     endif
-    call s:getlines()
     try
         echo 'execution result is outputed to '.s:output
     catch
@@ -144,10 +203,10 @@ func! DatabaseTerminal#conv() abort
     if filereadable(s:output)
         call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
         call delete(s:output)
-        call insert(s:lines,'')
+        call insert(s:outlines,'')
     endif
-    call map(s:lines,'v:val."  "')
-    call writefile(s:lines,s:txt,'a')
+    call map(s:outlines,'v:val."  "')
+    call writefile(s:outlines,s:txt,'a')
     call system('pandoc -t '.g:DatabaseTerminal_outputFormat.' -o '.s:output.' '.s:txt)
     call delete(s:txt)
     let s:lines = []
@@ -155,11 +214,46 @@ func! DatabaseTerminal#conv() abort
 endfunc
 
 func! DatabaseTerminal#startServ() abort
+    if !(has('win32') || has('win64'))
+        return
+    endif
     silent! call system(s:startcom)
     return
 endfunc
 
 func! DatabaseTerminal#clear() abort
+    if bufnr('') == s:outb
+        %delete_
+    endif
+    let buflist = []
+    for i in range(tabpagenr('$'))
+        call extend(buflist, tabpagebuflist(i + 1))
+    endfor
+    if index(buflist,s:outb) != -1
+        exe 'au WinEnter <buffer='.s:outb.'> %delete_'
+    endif
+    let s:outlines = []
+    return
+endfunc
+
+func! DatabaseTerminal#edit(...) abort
+    let com = ''
+    if a:0
+        if a:1 =~ 'v\%[split]'
+            let com = 'vs|'
+        else
+            let com = 'sp|'
+        endif
+    endif
+    try
+        exe com.'b '.s:outb
+    catch
+        call s:ech('Please run DbTerminal at first')
+    endtry
+    if len(s:lines) != 0
+        call append(line('$'),'')
+        call append(line('$'),s:lines)
+    endif
     let s:lines = []
     return
 endfunc
@@ -172,14 +266,19 @@ if exists('g:DatabaseTerminal_dbRunCom')
     let s:dict = 
     \ { "term_name" : "DbTerminal" ,
     \ "curwin" : 1 ,
-    \ "callback" : function('s:getlines') ,
     \ "exit_cb" : function('s:endDB') ,
-    \ "term_finish" : "close" }
+    \ "callback" : function('s:rec') ,
+    \ "term_finish" : "open" }
+    " \ "term_opencmd" : "10split|buffer %d" }
 endif
 
+if !exists('#DatabaseTerminal')
+    aug DatabaseTerminal
+        au!
+    aug END
+endif
 aug DatabaseTerminal
-    au!
-    au VimLeavePre * if buflisted('s:sqlb')|exe 'silent! bw! '.s:sqlb|endif
+    au FileType DbTerminal let s:bufwin = win_getid(winnr())
 aug END
 if exists('g:DatabaseTerminal_autoOutput')
     aug DatabaseTerminal
@@ -201,22 +300,23 @@ if exists('g:DatabaseTerminal_autodate')
     let s:date = strftime('%m%d')
     let s:folder .= s:date
 endif
-let g:DatabaseTerminal_outputFormat = 'markdown'
-let g:DatabaseTerminal_outputExtens = 'md'
+if !exists('g:DatabaseTerminal_outputFormat') || !exists('g:DatabaseTerminal_outputExtens')
+    let g:DatabaseTerminal_outputFormat = 'markdown'
+    let g:DatabaseTerminal_outputExtens = 'md'
+endif
 let s:txt = s:folder.'.txt'
 let s:output = s:folder.'.'.g:DatabaseTerminal_outputExtens
 
 let s:startcom = ''
-let s:stopcom = ''
 if exists('g:DatabaseTerminal_dbName')
     if has('win32') || has('win64')
         let s:startcom = 'net start '.g:DatabaseTerminal_dbName
-        let s:stopcom = 'call system(''net stop '.g:DatabaseTerminal_dbName.''')'
+        if !exists('g:DatabaseTerminal_dontStop')
+            aug DatabaseTerminal
+                exe 'au VimLeavePre * echom "stop"|call system("net stop '.g:DatabaseTerminal_dbName.'")'
+            aug END
+        endif
     endif
-endif
-
-if exists('g:DatabaseTerminal_dontStop')
-    let s:stopcom = ''
 endif
 
 if exists('g:DatabaseTerminal_openCom')

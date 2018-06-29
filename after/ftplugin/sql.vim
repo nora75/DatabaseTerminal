@@ -1,10 +1,10 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 2018 Jun 07
+" Last Change: 2018 Jun 30
 " Maintainer: NORA75
 " Licence: MIT
 " Add Command,Mapping and Autocommand
 
-if exists('b:did_DatabaseTerminal')
+if exists('b:did_DatabaseTerminal') || !has('terminal')
     finish
 endif
 let b:did_DatabaseTerminal = 1

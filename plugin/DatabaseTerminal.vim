@@ -1,10 +1,10 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 2018 Jun 25
+" Last Change: 2018 Jun 30
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
 
-if exists('g:loaded_DatabaseTerminal')
+if exists('g:loaded_DatabaseTerminal') || !has('terminal')
     finish
 endif
 let g:loaded_DatabaseTerminal = 1
@@ -20,16 +20,23 @@ command! -nargs=0 DbTStart call DatabaseTerminal#startServ()
 
 command! -nargs=0 DbTOutPut call DatabaseTerminal#conv()
 
-command! -nargs=0 DbTOutClear call DatabaseTerminal#clear()
+command! -nargs=0 DbTOutPutClear call DatabaseTerminal#clear()
+
+command! -nargs=* DbTOutPutEdit call DatabaseTerminal#edit(<f-args>)
+
+if !exists('#DatabaseTerminal')
+    aug DatabaseTerminal
+        au!
+    aug END
+endif
 
 aug DatabaseTerminal
-    au!
     autocmd BufNew * call timer_start(0, function('s:ft'))
 aug END
 
 function! s:ft(...)
     if &buftype == 'terminal' && &filetype == '' && bufname('%') == 'DbTerminal'
-        set filetype=DbTerminal
+        setl filetype=DbTerminal
     endif
 endfunction
 

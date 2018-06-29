@@ -30,14 +30,19 @@ You can use these commands.
 
     Output file to specified folder by g:DatabaseTerminal_folder and g:DatabaseTerminal_filename.  
 
++ :DbTOutPutClear
+
+    Clear the current output lines.  
+
++ :DbTOutPutEdit
+
+    Edit the current output lines in new buffer.  
+    The lines is saved when you close the buffer.  
+
 + :DbTStart
 
     Start Database server by manual.  
     This command needs administrator in windows.Not linux supports.  
-
-+ :DbTOutClear
-
-    Clear the current output lines.  
 
 ## Mapping
 
