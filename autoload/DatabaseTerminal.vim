@@ -245,11 +245,11 @@ func! DatabaseTerminal#edit(...) abort
             let com = 'sp|'
         endif
     endif
-    try
-        exe com.'b '.s:outb
-    catch
+    if !exists('s:outb')
         call s:ech('Please run DbTerminal at first')
-    endtry
+        return
+    endif
+    exe com.'b '.s:outb
     return
 endfunc
 
