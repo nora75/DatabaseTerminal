@@ -31,15 +31,25 @@ func! s:endDB(...) abort
     if !exists('s:sqlb')
         return
     endif
-    if s:errc > 1
+    if s:errc > 0
         call s:ech('Please run Database Server first')
+        call s:bufwip()
         return
     endif
     let s:errc += 1
-    if s:err() != 0
+    let errl = s:err()
+    if errl == 1
         let s:lines = []
         unlet s:sqlb
-        call DatabaseTerminal#startDB('current')
+        if has('win32') || has('win64')
+            echo 'Relaunch DbTerminal'
+            call DatabaseTerminal#startDB('current')
+        else
+            call s:ech('Please run Database Server first')
+        endif
+        return
+    elseif errl == 2
+        call s:bufwip()
         return
     endif
     echo 'Close DbTerminal'
@@ -144,6 +154,41 @@ func! s:appendhide() abort
     return
 endfunc
 
+func! s:getchar() abort
+
+    return key
+endfunc
+
+func! s:getChar() abort
+    try
+        let c = getchar()
+        if c =~ '^\d\+$'
+            let c = nr2char(c)
+        endif
+        if c =~ "\<Esc>"
+            throw 'Interrupt'
+        elseif c =~ "\<Enter>"
+            let c = 'en'
+        endif
+    catch
+        let c = 'Er'
+    endtry
+    return c
+endfunc
+
+func! s:input(msg) abort
+    let msg = a:msg.': '
+    echon msg
+    let c = s:getChar()
+    if c ==? 'y'
+        return 1
+    elseif c ==# 'en'
+        return 1
+    else
+        return 0
+    endif
+endfunc
+
 func! DatabaseTerminal#startDB(...) abort
     try
         let dict = copy(s:dict)
@@ -201,9 +246,11 @@ func! DatabaseTerminal#conv() abort
         call s:ech('Please set variables first,See helpfile :help DatabaseTerminal-Intro')
     endtry
     if filereadable(s:output)
-        call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
+        if !s:input(s:output.'is already exists.Do you want to override?')
+            call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
+            call insert(s:outlines,'')
+        endif
         call delete(s:output)
-        call insert(s:outlines,'')
     endif
     call map(s:outlines,'v:val."  "')
     call writefile(s:outlines,s:txt,'a')
@@ -308,7 +355,7 @@ if exists('g:DatabaseTerminal_dbName')
         let s:startcom = 'net start '.g:DatabaseTerminal_dbName
         if !exists('g:DatabaseTerminal_dontStop')
             aug DatabaseTerminal
-                exe 'au VimLeavePre * echom "stop"|call system("net stop '.g:DatabaseTerminal_dbName.'")'
+                exe 'au VimLeavePre * call system("net stop '.g:DatabaseTerminal_dbName.'")'
             aug END
         endif
     endif
