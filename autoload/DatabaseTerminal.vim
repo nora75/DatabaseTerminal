@@ -1,5 +1,5 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 2018 Jun 30
+" Last Change: 02-Jul-2018.
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
