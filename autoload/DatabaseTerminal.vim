@@ -41,13 +41,15 @@ func! s:endDB(...) abort
     if errl == 1
         let s:lines = []
         unlet s:sqlb
-        if has('win32') || has('win64')
-            echo 'Relaunch DbTerminal'
-            call DatabaseTerminal#startDB('current')
-        else
+        if !has('win32') || !has('win64')
             call s:ech('Please run Database Server first')
+            return
+        else
+            echo 'Relaunch DbTerminal'
+            call DatabaseTerminal#startServ()
+            call DatabaseTerminal#startDB('current')
+            return
         endif
-        return
     elseif errl == 2
         call s:bufwip()
         return
@@ -92,7 +94,6 @@ func! s:err() abort
     let msg = string(term_getline(s:sqlb,2))
     if msg !~ 'welcome' || msg =~? 'error' || msg == ''
         if msg =~? 'connect'
-            call DatabaseTerminal#startServ()
             return 1
         endif
         return 2
@@ -261,9 +262,6 @@ func! DatabaseTerminal#conv() abort
 endfunc
 
 func! DatabaseTerminal#startServ() abort
-    if !(has('win32') || has('win64'))
-        return
-    endif
     silent! call system(s:startcom)
     return
 endfunc
