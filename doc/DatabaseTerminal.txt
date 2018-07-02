@@ -99,7 +99,8 @@ Command~
 :DbTOutPutClear
 
     Clear the current output lines.
-    Note:This command can only clear output lines.Can't delete outputted file.
+    Note:
+    This command can only clear output lines.Can't delete outputted file.
 
                                                               *:DbTOutPutEdit*
 
@@ -109,6 +110,8 @@ Command~
     The lines is saved when you close the buffer.
     When {split} set to 'split'.Open DbTerminal in split.
     You can also set to 'vsplit'.Open DbTerminal in vsplit.
+    Note:
+    You can't edit output lines of current running DbTerminal.
 
                                                                    *:DbTStart*
 

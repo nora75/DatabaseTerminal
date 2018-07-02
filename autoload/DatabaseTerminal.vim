@@ -250,11 +250,6 @@ func! DatabaseTerminal#edit(...) abort
     catch
         call s:ech('Please run DbTerminal at first')
     endtry
-    if len(s:lines) != 0
-        call append(line('$'),'')
-        call append(line('$'),s:lines)
-    endif
-    let s:lines = []
     return
 endfunc
 
