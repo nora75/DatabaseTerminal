@@ -1,5 +1,5 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 02-Jul-2018.
+" Last Change: 05-Jul-2018.
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
@@ -22,6 +22,8 @@ command! -nargs=0 DbTOutPut call DatabaseTerminal#conv()
 
 command! -nargs=0 DbTOutPutClear call DatabaseTerminal#clear()
 
+command! -nargs=0 DbTOutPutDelete call DatabaseTerminal#delete()
+
 command! -nargs=* DbTOutPutEdit call DatabaseTerminal#edit(<f-args>)
 
 if !exists('#DatabaseTerminal')
@@ -33,6 +35,15 @@ endif
 aug DatabaseTerminal
     autocmd BufNew * call timer_start(0, function('s:ft'))
 aug END
+if exists('g:DatabaseTerminal_autoOutput')
+    aug DatabaseTerminal
+        au VimLeavePre * call DatabaseTerminal#conv()
+    aug END
+endif
+if !exists('g:DatabaseTerminal_outputFormat') || !exists('g:DatabaseTerminal_outputExtens')
+    let g:DatabaseTerminal_outputFormat = 'markdown'
+    let g:DatabaseTerminal_outputExtens = 'md'
+endif
 
 function! s:ft(...)
     if &buftype == 'terminal' && &filetype == '' && bufname('%') == 'DbTerminal'

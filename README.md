@@ -8,11 +8,12 @@ This plugin supports only up Vim 8.1
 This plugin provides command to open terminal and start acess to database.  
 It may be usefull for practice.  
 You can use \<Space>r mapping to send and run sql command in the terminal from your file.  
-You can export execusion result to file by [Pandoc](https://pandoc.org/).  
+You can export execusion result to file by using [Pandoc](https://pandoc.org/).  
 
 Note:  
 This plugin is made for me. So if you install this plugin, it may occur some problems.  
 This plugin can move on windows.Linux has support,It may be work because I don't debug.  
+I don't care any case.  
 
 # Usage
 

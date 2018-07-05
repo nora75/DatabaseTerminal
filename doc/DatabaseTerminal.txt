@@ -1,5 +1,5 @@
 *DatabaseTerminal.txt* Plugin for connect Database server from terminal
-" Last Change: 02-Jul-2018.
+" Last Change: 05-Jul-2018.
 " Maintainer: NORA75
 " Licence: MIT
 ================================================================================
@@ -80,7 +80,7 @@ Command~
     DbTerminal is closed when disconnect to database server.
     You can open only one DbTeminal at same time.
     This command support to start and end Database Sever automatically if
-    your acount is administrator in windows.
+    your current PC User is administrator in windows.
 
                                                                   *:DbTOutput*
 
@@ -101,6 +101,14 @@ Command~
     Clear the current output lines.
     Note:
     This command can only clear output lines.Can't delete outputted file.
+
+                                                             *:DbTOutPutDelete*
+
+:DbTOutPutDelete
+
+    Delete the current outputted file.
+    Note:
+    This command can only delete outputted file.Can't clear output lines.
 
                                                               *:DbTOutPutEdit*
 

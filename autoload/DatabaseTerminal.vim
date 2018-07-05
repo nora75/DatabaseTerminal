@@ -1,5 +1,5 @@
 " Vim global plugin for sql terminal functions
-" Last Change: 02-Jul-2018.
+" Last Change: 05-Jul-2018.
 " Maintainer: NORA75
 " Licence: MIT
 " autoload
@@ -19,11 +19,36 @@ if !has('terminal')
     finish
 endif
 
-func! s:rec(...) abort
-    if exists('s:timer')
-        call timer_stop(s:timer)
-    endif
-    let s:n = timer_start(1500,function('s:gettermlines'))
+func! s:appendhide() abort
+    exe 'sb '.s:outb
+    call append(line('$'),s:lines)
+    hide
+    return
+endfunc
+
+func! s:bufhide(...) abort
+    exe 'aug DatabaseTerminal|au VimLeavePre * silent! bw! '.s:sqlb.'|aug END'
+    return
+endfunc
+
+func! s:bufwip()
+    exe 'silent! bw! '.s:sqlb
+    unlet s:sqlb
+    return
+endfunc
+
+func! s:clear() abort
+    exe 'vs|silent! b '.s:outb
+    silent! %delete_
+    silent! q!
+    let s:outlines = []
+    return
+endfunc
+
+func! s:ech(ms) abort
+    echohl WarningMsg
+    echo a:ms
+    echohl None
     return
 endfunc
 
@@ -36,20 +61,12 @@ func! s:endDB(...) abort
         call s:bufwip()
         return
     endif
-    let s:errc += 1
     let errl = s:err()
     if errl == 1
         let s:lines = []
         unlet s:sqlb
-        if !has('win32') || !has('win64')
-            call s:ech('Please run Database Server first')
-            return
-        else
-            echo 'Relaunch DbTerminal'
-            call DatabaseTerminal#startServ()
-            call DatabaseTerminal#startDB('current')
-            return
-        endif
+        call s:relaunch()
+        return
     elseif errl == 2
         call s:bufwip()
         return
@@ -62,7 +79,27 @@ func! s:endDB(...) abort
     else
         call s:appendhide()
     endif
+    return
+endfunc
+
+func! s:err() abort
+    let msg = string(term_getline(s:sqlb,2))
+    if msg !~ 'welcome' || msg =~? 'error' || msg == ''
+        if msg =~? 'connect'
+            return 1
+        endif
+        return 2
+        let s:errc += 1
+    endif
     let s:errc = 0
+    return 0
+endfunc
+
+func! s:getoutlines(...) abort
+    if !exists('s:outb')
+        return
+    endif
+    let s:outlines = getbufline(s:outb,1,'$')
     return
 endfunc
 
@@ -80,84 +117,6 @@ func! s:gettermlines(...) abort
         endif
     endif
     return
-endfunc
-
-func! s:getoutlines(...) abort
-    if !exists('s:outb')
-        return
-    endif
-    let s:outlines = getbufline(s:outb,1,'$')
-    return
-endfunc
-
-func! s:err() abort
-    let msg = string(term_getline(s:sqlb,2))
-    if msg !~ 'welcome' || msg =~? 'error' || msg == ''
-        if msg =~? 'connect'
-            return 1
-        endif
-        return 2
-    endif
-    return 0
-endfunc
-
-func! s:ech(ms) abort
-    echohl WarningMsg
-    echo a:ms
-    echohl None
-    return
-endfunc
-
-func! s:bufhide(...) abort
-    exe 'aug DatabaseTerminal|au VimLeavePre * silent! bw! '.s:sqlb.'|aug END'
-    return
-endfunc
-
-func! s:bufwip()
-    exe 'silent! bw! '.s:sqlb
-    unlet s:sqlb
-    return
-endfunc
-
-func! s:setopen(...) abort
-    let args = join(a:000)
-    if args =~ 'current'
-        let s:opencom = ''
-    elseif args =~? 'vs'
-        let s:opencom = 'vnew'
-    elseif args =~? 'sp'
-        let s:opencom = 'new'
-    endif
-    return
-endfunc
-
-func! s:makehide() abort
-    new
-    silent f DbTOutPut
-    setl noswf
-    setl bh=hide
-    setl nobl
-    setl bt=nofile
-    set ft=DbTOut
-    call append(line('$'),s:lines)
-    1delete_
-    let s:lines = []
-    setl nomod
-    let s:outb = bufnr('')
-    hide
-    return
-endfunc
-
-func! s:appendhide() abort
-    exe 'sb '.s:outb
-    call append(line('$'),s:lines)
-    hide
-    return
-endfunc
-
-func! s:getchar() abort
-
-    return key
 endfunc
 
 func! s:getChar() abort
@@ -179,7 +138,7 @@ endfunc
 
 func! s:input(msg) abort
     let msg = a:msg.': '
-    echon msg
+    echo msg
     let c = s:getChar()
     if c ==? 'y'
         return 1
@@ -188,6 +147,127 @@ func! s:input(msg) abort
     else
         return 0
     endif
+endfunc
+
+func! s:makehide() abort
+    new
+    silent f DbTOutPut
+    setl noswf
+    setl bh=hide
+    setl nobl
+    setl bt=nofile
+    set ft=DbTOut
+    call append(line('$'),s:lines)
+    1delete_
+    let s:lines = []
+    setl nomod
+    let s:outb = bufnr('')
+    hide
+    return
+endfunc
+
+func! s:rec(...) abort
+    if exists('s:timer')
+        call timer_stop(s:timer)
+    endif
+    let s:n = timer_start(1500,function('s:gettermlines'))
+    return
+endfunc
+
+func! s:relaunch() abort
+    if !has('win32') || !has('win64')
+        call s:ech('Please run Database Server first')
+    else
+        echo 'Relaunch DbTerminal'
+        call DatabaseTerminal#startServ()
+        call DatabaseTerminal#startDB('current')
+    endif
+    return
+endfunc
+
+func! s:setopen(...) abort
+    let args = join(a:000)
+    if args =~ 'current'
+        let open = ''
+    elseif args =~? 'vs'
+        let open = 'vnew'
+    elseif args =~? 'sp'
+        let open = 'new'
+    endif
+    return open
+endfunc
+
+func! DatabaseTerminal#clear() abort
+    call s:clear()
+    echo 'Clear output lines'
+    return
+endfunc
+
+func! DatabaseTerminal#conv() abort
+    if !executable('pandoc')
+        call s:ech('You Don''t meet the requirements to output file.See helpfile :help DatabaseTerminal-Intro')
+        return
+    endif
+    call s:getoutlines()
+    if len(s:outlines) == 0 
+        echo 'no output lines'
+        return
+    endif
+    if !exists('s:output')
+        call s:ech('Please set variables first.See helpfile :help DatabaseTerminal-Intro')
+        return
+    endif
+    if filereadable(s:output)
+        if !s:input(s:output.' is already exists.Override[y/Enter] Append[n]')
+            call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
+            if len(s:outlines) > 0
+                call insert(s:outlines,'')
+            endif
+        endif
+        call delete(s:output)
+    endif
+    echo 'execution result is outputed to '.s:output
+    call map(s:outlines,'v:val."  "')
+    call writefile(s:outlines,s:txt,'a')
+    call system('pandoc -t '.g:DatabaseTerminal_outputFormat.' -o '.s:output.' '.s:txt)
+    call delete(s:txt)
+    call s:clear()
+    return
+endfunc
+
+func! DatabaseTerminal#delete() abort
+    silnet! call delete(s:output)
+    return
+endfunc
+
+func! DatabaseTerminal#edit(...) abort
+    let com = ''
+    if a:0
+        if a:1 =~ 'v\%[split]'
+            let com = 'vs|'
+        else
+            let com = 'sp|'
+        endif
+    endif
+    if !exists('s:outb')
+        call s:ech('Please run DbTerminal at first')
+        return
+    endif
+    exe com.'silent! b '.s:outb
+    return
+endfunc
+
+func! DatabaseTerminal#runcom(line1,line2) abort
+    if !exists('s:sqlb')
+        call DatabaseTerminal#startDB()
+        return
+    elseif term_getstatus(s:sqlb) ==# 'normal'
+        call term_sendkeys(s:sqlb,'i')
+    endif
+    for i in getline(a:line1,a:line2)
+        call term_sendkeys(s:sqlb,i."\<CR>")
+    endfor
+    return
 endfunc
 
 func! DatabaseTerminal#startDB(...) abort
@@ -218,83 +298,8 @@ func! DatabaseTerminal#startDB(...) abort
     return
 endfunc
 
-func! DatabaseTerminal#runcom(line1,line2) abort
-    if !exists('s:sqlb')
-        call DatabaseTerminal#startDB()
-        return
-    elseif term_getstatus(s:sqlb) ==# 'normal'
-        call term_sendkeys(s:sqlb,'i')
-    endif
-    for i in getline(a:line1,a:line2)
-        call term_sendkeys(s:sqlb,i."\<CR>")
-    endfor
-    return
-endfunc
-
-func! DatabaseTerminal#conv() abort
-    if !executable('pandoc')
-        call s:ech('You Don''t meet the requirements to output file')
-        return
-    endif
-    call s:getoutlines()
-    if !len(s:outlines)
-        echo 'no output lines'
-        return
-    endif
-    try
-        echo 'execution result is outputed to '.s:output
-    catch
-        call s:ech('Please set variables first,See helpfile :help DatabaseTerminal-Intro')
-    endtry
-    if filereadable(s:output)
-        if !s:input(s:output.'is already exists.Do you want to override?')
-            call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
-            call insert(s:outlines,'')
-        endif
-        call delete(s:output)
-    endif
-    call map(s:outlines,'v:val."  "')
-    call writefile(s:outlines,s:txt,'a')
-    call system('pandoc -t '.g:DatabaseTerminal_outputFormat.' -o '.s:output.' '.s:txt)
-    call delete(s:txt)
-    let s:lines = []
-    return
-endfunc
-
 func! DatabaseTerminal#startServ() abort
     silent! call system(s:startcom)
-    return
-endfunc
-
-func! DatabaseTerminal#clear() abort
-    if bufnr('') == s:outb
-        %delete_
-    endif
-    let buflist = []
-    for i in range(tabpagenr('$'))
-        call extend(buflist, tabpagebuflist(i + 1))
-    endfor
-    if index(buflist,s:outb) != -1
-        exe 'au WinEnter <buffer='.s:outb.'> %delete_'
-    endif
-    let s:outlines = []
-    return
-endfunc
-
-func! DatabaseTerminal#edit(...) abort
-    let com = ''
-    if a:0
-        if a:1 =~ 'v\%[split]'
-            let com = 'vs|'
-        else
-            let com = 'sp|'
-        endif
-    endif
-    if !exists('s:outb')
-        call s:ech('Please run DbTerminal at first')
-        return
-    endif
-    exe com.'b '.s:outb
     return
 endfunc
 
@@ -309,7 +314,6 @@ if exists('g:DatabaseTerminal_dbRunCom')
     \ "exit_cb" : function('s:endDB') ,
     \ "callback" : function('s:rec') ,
     \ "term_finish" : "open" }
-    " \ "term_opencmd" : "10split|buffer %d" }
 endif
 
 if !exists('#DatabaseTerminal')
@@ -320,11 +324,6 @@ endif
 aug DatabaseTerminal
     au FileType DbTerminal let s:bufwin = win_getid(winnr())
 aug END
-if exists('g:DatabaseTerminal_autoOutput')
-    aug DatabaseTerminal
-        au VimLeavePre * call DatabaseTerminal#conv()
-    aug END
-endif
 
 let s:folder = expand('~').'\'
 let s:folder .= 'DBlog'
@@ -339,10 +338,6 @@ endif
 if exists('g:DatabaseTerminal_autodate')
     let s:date = strftime('%m%d')
     let s:folder .= s:date
-endif
-if !exists('g:DatabaseTerminal_outputFormat') || !exists('g:DatabaseTerminal_outputExtens')
-    let g:DatabaseTerminal_outputFormat = 'markdown'
-    let g:DatabaseTerminal_outputExtens = 'md'
 endif
 let s:txt = s:folder.'.txt'
 let s:output = s:folder.'.'.g:DatabaseTerminal_outputExtens
