@@ -79,6 +79,7 @@ func! s:endDB(...) abort
     else
         call s:appendhide()
     endif
+    let s:called = 1
     return
 endfunc
 
@@ -210,7 +211,9 @@ func! DatabaseTerminal#conv() abort
     endif
     call s:getoutlines()
     if len(s:outlines) == 0 
-        echo 'no output lines'
+        if !exists('s:called')
+            echo 'no output lines'
+        endif
         return
     endif
     if !exists('s:output')
@@ -218,7 +221,7 @@ func! DatabaseTerminal#conv() abort
         return
     endif
     if filereadable(s:output)
-        if !s:input(s:output.' is already exists.Override[y/Enter] Append[n]')
+        if !s:input(s:output.' is already exists.Override[y/Enter] Append[n / other keys]')
             call system('pandoc -f '.g:DatabaseTerminal_outputFormat.' -t markdown -o '.s:txt.' '.s:output)
             if len(s:outlines) > 0
                 call insert(s:outlines,'')
@@ -362,6 +365,12 @@ else
     else
         let s:opencom = 'new'
     endif
+endif
+
+if exists('g:DatabaseTerminal_autoOutput')
+    aug DatabaseTerminal
+        au VimLeavePre * call DatabaseTerminal#conv()
+    aug END
 endif
 
 let &cpo = s:savecpo

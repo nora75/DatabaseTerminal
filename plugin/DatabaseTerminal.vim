@@ -35,11 +35,6 @@ endif
 aug DatabaseTerminal
     autocmd BufNew * call timer_start(0, function('s:ft'))
 aug END
-if exists('g:DatabaseTerminal_autoOutput')
-    aug DatabaseTerminal
-        au VimLeavePre * call DatabaseTerminal#conv()
-    aug END
-endif
 if !exists('g:DatabaseTerminal_outputFormat') || !exists('g:DatabaseTerminal_outputExtens')
     let g:DatabaseTerminal_outputFormat = 'markdown'
     let g:DatabaseTerminal_outputExtens = 'md'
