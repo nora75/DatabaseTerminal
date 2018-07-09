@@ -77,7 +77,11 @@ func! s:endDB(...) abort
     if !exists('s:outb')
         call s:makehide()
     else
-        call s:appendhide()
+        if !bufexists(s:outb)
+            call s:makehide()
+        else
+            call s:appendhide()
+        endif
     endif
     let s:called = 1
     return
@@ -199,6 +203,10 @@ func! s:setopen(...) abort
 endfunc
 
 func! DatabaseTerminal#clear() abort
+    if !exists('s:outb')
+        echo 'no output lines'
+        return
+    endif
     call s:clear()
     echo 'Clear output lines'
     return
@@ -369,7 +377,7 @@ endif
 
 if exists('g:DatabaseTerminal_autoOutput')
     aug DatabaseTerminal
-        au VimLeavePre * call DatabaseTerminal#conv()
+        au VimLeavePre * if exists('s:called')|call DatabaseTerminal#conv()|endif
     aug END
 endif
 
